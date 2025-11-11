@@ -1,0 +1,73 @@
+# 项目依赖包列表
+# 生成方式: pip freeze > requirements.txt
+
+# PDF处理
+PyPDF2==3.0.1
+pdfplumber==0.9.0
+reportlab==4.0.4
+
+# 数据处理和分析
+pandas==2.1.3
+numpy==1.24.3
+scipy==1.11.4
+
+# 机器学习
+scikit-learn==1.3.2
+nltk==3.8.1
+
+# Web框架
+Flask==3.0.0
+Flask-CORS==4.0.0
+Werkzeug==3.0.1
+
+# 自然语言处理
+jieba==0.42.1
+snownlp==0.12.3
+
+# 数据可视化
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# 配置管理
+PyYAML==6.0.1
+python-dotenv==1.0.0
+
+# 日志管理
+loguru==0.7.2
+
+# 测试框架
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# 代码质量
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# 文档生成
+Sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+
+# 进度条和CLI美化
+tqdm==4.66.1
+click==8.1.7
+colorama==0.4.6
+
+# 文件处理
+openpyxl==3.1.2
+python-docx==1.1.0
+
+# 图像处理（用于PDF中的图像分析）
+Pillow==10.1.0
+opencv-python==4.8.1.78
+
+# 科学计算相关
+sympy==1.12
+
+# 开发工具
+ipython==8.18.1
+jupyter==1.0.0
+
+# 性能优化
+numba==0.58.1

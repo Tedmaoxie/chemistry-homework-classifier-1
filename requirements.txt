@@ -1,0 +1,9 @@
+# Root requirements aggregator
+-r chemistry-homework-classifier/requirements.txt
+-r chemistry-homework-classifier/requirements-web.txt
+
+# Report generation and document handling
+reportlab>=4.0.0
+python-docx>=0.8.11
+pdfplumber>=0.10.3
+pypdfium2>=4.24.0

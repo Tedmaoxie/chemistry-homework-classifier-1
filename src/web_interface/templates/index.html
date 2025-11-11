@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>化学作业分层报告生成器</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans CJK SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; margin: 24px; }
+      h1 { color: #1f6feb; }
+      .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; max-width: 800px; }
+      textarea { width: 100%; height: 240px; padding: 8px; }
+      .row { display: flex; gap: 12px; align-items: center; }
+      .btn { background: #2ea043; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+      .btn:hover { background: #22863a; }
+      .muted { color: #6b7280; font-size: 14px; }
+      .file { padding: 8px; }
+      .tip { background: #f6f8fa; border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px; }
+      label { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>化学作业分层报告生成器</h1>
+    <div class="card">
+      <p class="muted">在下方粘贴题目文本或上传文本文件（UTF-8/GBK），点击“生成PDF报告”即可下载分层结果。</p>
+      <form method="post" action="/generate" enctype="multipart/form-data">
+        <label for="questions_text">题目文本</label>
+        <textarea id="questions_text" name="questions_text" placeholder="题目：...\n答案：...\n\n题目：...\n（题目块之间请使用空行分隔）"></textarea>
+        <div class="row" style="margin-top: 12px;">
+          <label for="file">或上传文件（TXT/PDF/DOCX）：</label>
+          <input class="file" id="file" type="file" name="file" accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+        </div>
+        <div class="tip" style="margin-top: 12px;">
+          <div><strong>格式示例：</strong></div>
+          <div>题目：已知某弱酸的电离常数为 Ka=1.8e-5，计算其在0.1mol/L 溶液中的 pH。</div>
+          <div>答案：pH≈2.9</div>
+          <div style="height: 8px"></div>
+          <div>题目：比较甲烷与乙烷的分子结构与物理性质差异，并说明原因。</div>
+          <div style="height: 8px"></div>
+          <div>题目：设计实验测定某反应的活化能，并讨论误差来源。</div>
+        </div>
+        <div style="margin-top: 16px;">
+          <button class="btn" type="submit">生成PDF报告</button>
+        </div>
+      </form>
+    </div>
+
+    <h1 style="margin-top: 28px;">文本转换为标准文档</h1>
+    <div class="card">
+      <p class="muted">上传文本文件或直接粘贴文本，选择输出格式（PDF/DOCX），点击“开始转换”，即可下载标准格式文档。</p>
+      <form id="convert-form">
+        <div class="row">
+          <label for="convert-file">上传文件（TXT/PDF/DOCX）：</label>
+          <input class="file" id="convert-file" type="file" accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+        </div>
+        <div style="margin-top: 8px;">
+          <label for="convert-text">或粘贴文本：</label>
+          <textarea id="convert-text" placeholder="在此粘贴文本内容（保留段落与列表格式）"></textarea>
+        </div>
+        <div class="row" style="margin-top: 8px;">
+          <label>输出格式：</label>
+          <label><input type="radio" name="target_format" value="pdf" checked /> PDF</label>
+          <label><input type="radio" name="target_format" value="docx" /> DOCX</label>
+        </div>
+        <div style="margin-top: 12px;" class="muted">进度：</div>
+        <div id="progress" style="height: 10px; background: #f3f4f6; border-radius: 6px; overflow: hidden;">
+          <div id="bar" style="height: 10px; width: 0%; background: #1f6feb;"></div>
+        </div>
+        <div style="margin-top: 12px;">
+          <button class="btn" type="button" id="btn-convert">开始转换</button>
+        </div>
+      </form>
+
+      <script>
+        const btn = document.getElementById('btn-convert');
+        const fileInput = document.getElementById('convert-file');
+        const textArea = document.getElementById('convert-text');
+        const bar = document.getElementById('bar');
+
+        btn.addEventListener('click', async () => {
+          const format = document.querySelector('input[name="target_format"]:checked').value;
+          const formData = new FormData();
+          formData.append('target_format', format);
+          if (fileInput.files && fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
+          } else {
+            formData.append('text_content', textArea.value || '');
+          }
+
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/convert');
+          xhr.responseType = 'blob';
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const pct = Math.round((e.loaded / e.total) * 100);
+              bar.style.width = pct + '%';
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              const blob = xhr.response;
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = format === 'pdf' ? 'converted.pdf' : 'converted.docx';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+              bar.style.width = '0%';
+            } else {
+              alert('转换失败：' + xhr.status + ' ' + (xhr.responseText || ''));
+              bar.style.width = '0%';
+            }
+          };
+          xhr.onerror = () => {
+            alert('网络错误，转换未完成。');
+            bar.style.width = '0%';
+          };
+          xhr.send(formData);
+        });
+      </script>
+    </div>
+  </body>
+</html>
